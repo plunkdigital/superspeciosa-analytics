@@ -7,9 +7,9 @@ A **qualifying order** is a Shopify order that:
 * has been successfully paid;
 * is not a test order;
 * has not been cancelled; and
-* has an order value greater than $0, excluding shipping and fees.
+* has an order value greater than $0, excluding shipping, tax, and fees.
 
-Orders with $0 product/order value do not count as qualifying orders, even if shipping or other fees were charged.
+Orders with $0 product/order value do not count as qualifying orders, even if shipping, tax, or other fees were charged.
 
 A later refund does not cause an otherwise qualifying order to stop being a qualifying order.
 
@@ -17,20 +17,23 @@ A later refund does not cause an otherwise qualifying order to stop being a qual
 
 ## 2. Revenue
 
-**Revenue** is the value of the qualifying order excluding:
+**Revenue** is the value of the qualifying order after discounts, excluding:
 
-* shipping; and
+* shipping;
+* tax; and
 * fees.
 
 Refunds do not retrospectively remove an order from revenue/order reporting.
 
 Revenue is recorded against the original order.
 
-### Tax treatment
+Example:
 
-TBD.
-
-We need to explicitly decide whether tax is included in or excluded from the revenue metric.
+* Products after discounts: $100
+* Tax: $7
+* Shipping: $5
+* Total charged: $112
+* Super Speciosa revenue: **$100**
 
 ---
 
@@ -45,13 +48,11 @@ The order reporting table should show:
 * whether the order has been refunded;
 * whether the refund is partial or full;
 * total amount refunded; and
-* remaining value after refunds.
+* remaining revenue after refunds.
 
 Partial refunds are supported.
 
-The separate refund report should record individual refund events.
-
-Proposed reporting convention:
+Reporting convention:
 
 * order reporting uses the original order date;
 * refund reporting uses the date the refund was processed;
@@ -97,9 +98,9 @@ For example, if a customer's first qualifying order occurred in January and they
 
 ## 6. Refunds and Customer Classification
 
-Refunds do not currently rewrite customer acquisition history.
+Refunds do not rewrite customer acquisition history.
 
-Therefore, if a customer's first qualifying order is subsequently partially or fully refunded, it remains their first qualifying order.
+If a customer's first qualifying order is subsequently partially or fully refunded, it remains their first qualifying order.
 
 A later qualifying purchase is still classified as a returning customer order.
 
@@ -114,7 +115,7 @@ Initial identity rule:
 1. Use Shopify Customer ID where available.
 2. If Shopify Customer ID is unavailable, use a controlled fallback identity method.
 
-The fallback method will be defined when the Shopify source data is inspected.
+The fallback method will be defined after inspecting the Shopify source data.
 
 ---
 
@@ -134,7 +135,7 @@ The initial order reporting dataset should make the following available:
 * fees, where applicable
 * refunded amount
 * refund status
-* remaining value after refunds
+* remaining revenue after refunds
 * payment status
 * cancellation status
 * test order status
