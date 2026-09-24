@@ -171,22 +171,10 @@ def _map_refund(
     # inspected Super Speciosa data.
     fee_refund = ZERO
 
-    known_amount = (
-        product_refund
-        + shipping_refund
-        + tax_refund
-        + fee_refund
-    )
-
-    # Shopify refund lifecycle records do not always attach
-    # the actual cash refund and the attributed line items to
-    # the same Refund object. Therefore this is only a
-    # positive unexplained remainder for this individual
-    # refund record.
-    unallocated = max(
-        total_refund - known_amount,
-        ZERO,
-    )
+    # Do not derive an unallocated amount per Refund object.
+    # Shopify can separate refund attribution and cash movement
+    # across different Refund objects.
+    unallocated = ZERO
 
     created_at = _datetime(refund["createdAt"])
 
