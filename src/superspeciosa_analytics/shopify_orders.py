@@ -19,6 +19,7 @@ query Orders(
     nodes {
       id
       name
+      createdAt
       processedAt
       updatedAt
       cancelledAt
@@ -26,6 +27,23 @@ query Orders(
       displayFinancialStatus
       currencyCode
       taxesIncluded
+
+      sourceName
+      sourceIdentifier
+
+      wooOrderId: metafield(
+        namespace: "woo"
+        key: "id_"
+      ) {
+        value
+      }
+
+      wooCustomerId: metafield(
+        namespace: "woo"
+        key: "customer_id"
+      ) {
+        value
+      }
 
       subtotalPriceSet {
         shopMoney {
@@ -64,6 +82,13 @@ query Orders(
 
       customer {
         id
+
+        wooCustomerId: metafield(
+          namespace: "woo"
+          key: "id_"
+        ) {
+          value
+        }
       }
 
       transactions {

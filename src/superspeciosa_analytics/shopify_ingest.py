@@ -87,6 +87,9 @@ def upsert_orders(
                     shopify_customer_id=(
                         mapped.shopify_customer_id
                     ),
+                    woo_customer_id=(
+                        mapped.shopify_customer_woo_id
+                    ),
                     shopify_created_at=None,
                     shopify_updated_at=None,
                     ingested_at=now,
@@ -100,12 +103,26 @@ def upsert_orders(
             else:
                 customer.ingested_at = now
 
+                customer.woo_customer_id = (
+                    mapped.shopify_customer_woo_id
+                )
+
         order = existing_orders.get(
             mapped.shopify_order_id
         )
 
         if order is None:
             order = Order(
+                shopify_created_at=(
+                    mapped.shopify_created_at
+                ),
+                reporting_order_at=(
+                    mapped.reporting_order_at
+                ),
+                source_name=mapped.source_name,
+                source_system=mapped.source_system,
+                source_order_id=mapped.source_order_id,
+                woo_customer_id=mapped.woo_customer_id,
                 shopify_order_id=(
                     mapped.shopify_order_id
                 ),
@@ -148,10 +165,31 @@ def upsert_orders(
             created += 1
 
         order.customer = customer
+
         order.shopify_order_name = (
             mapped.shopify_order_name
         )
-        order.processed_at = mapped.processed_at
+        order.shopify_created_at = (
+            mapped.shopify_created_at
+        )
+        order.reporting_order_at = (
+            mapped.reporting_order_at
+        )
+        order.source_name = (
+            mapped.source_name
+        )
+        order.source_system = (
+            mapped.source_system
+        )
+        order.source_order_id = (
+            mapped.source_order_id
+        )
+        order.woo_customer_id = (
+            mapped.woo_customer_id
+        )
+        order.processed_at = (
+            mapped.processed_at
+        )
         order.has_successful_payment = (
             mapped.has_successful_payment
         )
@@ -159,16 +197,24 @@ def upsert_orders(
             mapped.display_financial_status
         )
         order.is_test = mapped.is_test
-        order.cancelled_at = mapped.cancelled_at
-        order.currency_code = mapped.currency_code
+        order.cancelled_at = (
+            mapped.cancelled_at
+        )
+        order.currency_code = (
+            mapped.currency_code
+        )
         order.product_revenue = (
             mapped.product_revenue
         )
         order.shipping_amount = (
             mapped.shipping_amount
         )
-        order.tax_amount = mapped.tax_amount
-        order.fee_amount = mapped.fee_amount
+        order.tax_amount = (
+            mapped.tax_amount
+        )
+        order.fee_amount = (
+            mapped.fee_amount
+        )
         order.total_charged = (
             mapped.total_charged
         )

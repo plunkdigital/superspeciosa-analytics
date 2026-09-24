@@ -40,6 +40,17 @@ class MappedRefund:
 class MappedOrder:
     shopify_order_id: str
     shopify_order_name: str
+
+    shopify_created_at: datetime | None
+    reporting_order_at: datetime
+
+    source_name: str | None
+    source_system: str
+    source_order_id: str | None
+
+    woo_customer_id: str | None
+    shopify_customer_woo_id: str | None
+
     shopify_customer_id: str | None
 
     processed_at: datetime
@@ -84,6 +95,14 @@ def _assert_complete_connection(
             f"{label} exceeds the current Shopify "
             "per-order query limit."
         )
+
+def _metafield_value(
+    field: dict[str, Any] | None,
+) -> str | None:
+    if field is None:
+        return None
+
+    return field["value"]
 
 def _money(value: dict[str, Any] | None) -> Decimal:
     if value is None:
@@ -238,6 +257,41 @@ def map_shopify_order(
 
     currency_code = order["currencyCode"]
 
+    source_name = order.get("sourceName")
+
+    woo_order_id = _metafield_value(
+        order.get("wooOrderId")
+    )
+
+    woo_customer_id = _metafield_value(
+        order.get("wooCustomerId")
+    )
+
+    customer = order.get("customer")
+
+    shopify_customer_woo_id = (
+        _metafield_value(
+            customer.get("wooCustomerId")
+        )
+        if customer
+        else None
+    )
+
+    if (
+        source_name == "Matrixify App"
+        and woo_order_id is not None
+    ):
+        source_system = "woocommerce"
+        source_order_id = woo_order_id
+
+    elif source_name == "Matrixify App":
+        source_system = "matrixify_unknown"
+        source_order_id = None
+
+    else:
+        source_system = "shopify"
+        source_order_id = order["id"]
+
     _assert_complete_connection(
         order["lineItems"],
         f"Order {order['name']} line items",
@@ -259,9 +313,22 @@ def map_shopify_order(
     return MappedOrder(
         shopify_order_id=order["id"],
         shopify_order_name=order["name"],
+        shopify_created_at=_datetime(
+            order.get("createdAt")
+        ),
+        reporting_order_at=processed_at,
+
+        source_name=source_name,
+        source_system=source_system,
+        source_order_id=source_order_id,
+
+        woo_customer_id=woo_customer_id,
+        shopify_customer_woo_id=(
+            shopify_customer_woo_id
+        ),
         shopify_customer_id=(
-            order["customer"]["id"]
-            if order.get("customer")
+            customer["id"]
+            if customer
             else None
         ),
         processed_at=processed_at,

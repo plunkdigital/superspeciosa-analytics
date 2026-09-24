@@ -31,6 +31,12 @@ class Customer(Base):
         index=True,
     )
 
+    woo_customer_id: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+        index=True,
+    )
+
     shopify_created_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True)
     )
@@ -64,6 +70,40 @@ class Order(Base):
     shopify_order_name: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
+    )
+
+    shopify_created_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    reporting_order_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        index=True,
+    )
+
+    source_name: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    source_system: Mapped[str | None] = mapped_column(
+        String(40),
+        nullable=True,
+        index=True,
+    )
+
+    source_order_id: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+        index=True,
+    )
+
+    woo_customer_id: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+        index=True,
     )
 
     customer_id: Mapped[int | None] = mapped_column(
