@@ -161,3 +161,18 @@ def test_order_without_customer_is_supported():
     order = map_shopify_order(payload)
 
     assert order.shopify_customer_id is None
+
+def test_rejects_truncated_line_items():
+    payload = load_fixture(
+        "shopify_paid_order.json"
+    )
+
+    payload["lineItems"]["pageInfo"] = {
+        "hasNextPage": True,
+    }
+
+    with pytest.raises(
+        ShopifyMappingError,
+        match="per-order query limit",
+    ):
+        map_shopify_order(payload)

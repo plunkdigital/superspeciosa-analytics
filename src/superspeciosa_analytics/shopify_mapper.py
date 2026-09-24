@@ -70,6 +70,20 @@ def _datetime(value: str | None) -> datetime | None:
         value.replace("Z", "+00:00")
     )
 
+def _assert_complete_connection(
+    connection: dict[str, Any],
+    label: str,
+) -> None:
+    page_info = connection.get("pageInfo")
+
+    if (
+        page_info is not None
+        and page_info.get("hasNextPage") is True
+    ):
+        raise ShopifyMappingError(
+            f"{label} exceeds the current Shopify "
+            "per-order query limit."
+        )
 
 def _money(value: dict[str, Any] | None) -> Decimal:
     if value is None:
@@ -137,6 +151,16 @@ def _map_refund(
 ) -> MappedRefund:
     refund_lines = refund["refundLineItems"]["nodes"]
     shipping_lines = refund["refundShippingLines"]["nodes"]
+
+    _assert_complete_connection(
+        refund["refundLineItems"],
+        f"Refund {refund['id']} line items",
+    )
+
+    _assert_complete_connection(
+        refund["refundShippingLines"],
+        f"Refund {refund['id']} shipping lines",
+    )
 
     product_refund = _sum_money(
         refund_lines,
@@ -213,6 +237,11 @@ def map_shopify_order(
         )
 
     currency_code = order["currencyCode"]
+
+    _assert_complete_connection(
+        order["lineItems"],
+        f"Order {order['name']} line items",
+    )
 
     lines = tuple(
         _map_line_item(line)

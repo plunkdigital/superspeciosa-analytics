@@ -7,7 +7,7 @@ from sqlalchemy import select
 from superspeciosa_analytics.database import SessionLocal
 from superspeciosa_analytics.models import Order
 from superspeciosa_analytics.shopify_ingest import (
-    upsert_order,
+    upsert_orders,
 )
 from superspeciosa_analytics.shopify_mapper import (
     map_shopify_order,
@@ -97,13 +97,41 @@ source_tax = sum(
     Decimal("0"),
 )
 
-with SessionLocal() as session:
-    created = sum(
-        upsert_order(session, order)
-        for order in mapped_orders
-    )
+BATCH_SIZE = 500
 
-    session.commit()
+with SessionLocal() as session:
+    created = 0
+    total = len(mapped_orders)
+
+    for start_index in range(
+        0,
+        total,
+        BATCH_SIZE,
+    ):
+        batch = mapped_orders[
+            start_index:start_index + BATCH_SIZE
+        ]
+
+        created += upsert_orders(
+            session,
+            batch,
+        )
+
+        session.commit()
+
+        processed = min(
+            start_index + BATCH_SIZE,
+            total,
+        )
+
+        print(
+            f"Imported {processed}/{total} orders "
+            f"({created} new)...",
+            flush=True,
+        )
+
+        # Keep memory bounded during large backfills.
+        session.expunge_all()
 
     db_orders = session.scalars(
         select(Order)

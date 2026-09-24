@@ -103,9 +103,13 @@ query Orders(
             }
           }
         }
+
+        pageInfo {
+          hasNextPage
+        }
       }
 
-      refunds(first: 20) {
+      refunds {
         id
         createdAt
 
@@ -139,6 +143,10 @@ query Orders(
               title
             }
           }
+
+          pageInfo {
+            hasNextPage
+          }
         }
 
         refundShippingLines(first: 20) {
@@ -156,6 +164,10 @@ query Orders(
                 currencyCode
               }
             }
+          }
+
+          pageInfo {
+            hasNextPage
           }
         }
       }
