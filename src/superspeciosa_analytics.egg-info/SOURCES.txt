@@ -1,6 +1,7 @@
 README.md
 pyproject.toml
 src/superspeciosa_analytics/__init__.py
+src/superspeciosa_analytics/database.py
 src/superspeciosa_analytics/models.py
 src/superspeciosa_analytics/order_rules.py
 src/superspeciosa_analytics.egg-info/PKG-INFO

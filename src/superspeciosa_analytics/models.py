@@ -256,6 +256,12 @@ class Refund(Base):
         default=Decimal("0"),
     )
 
+    unallocated_refund_amount: Mapped[Decimal] = mapped_column(
+        MONEY,
+        nullable=False,
+        default=Decimal("0"),
+    )
+
     total_refund_amount: Mapped[Decimal] = mapped_column(
         MONEY,
         nullable=False,
