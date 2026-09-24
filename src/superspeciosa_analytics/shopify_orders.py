@@ -1,14 +1,20 @@
+from datetime import UTC, datetime
 from typing import Any
 
 from superspeciosa_analytics.shopify import graphql
 
 
-RECENT_ORDERS_QUERY = """
-query RecentOrders($first: Int!) {
+ORDERS_QUERY = """
+query Orders(
+  $first: Int!
+  $after: String
+  $search: String
+) {
   orders(
     first: $first
+    after: $after
+    query: $search
     sortKey: PROCESSED_AT
-    reverse: true
   ) {
     nodes {
       id
@@ -154,17 +160,92 @@ query RecentOrders($first: Int!) {
         }
       }
     }
+
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
   }
 }
 """
+
+
+def _shopify_datetime(value: datetime) -> str:
+    if value.tzinfo is None:
+        raise ValueError(
+            "Shopify range datetimes must be timezone-aware."
+        )
+
+    utc_value = value.astimezone(UTC)
+
+    return (
+        utc_value
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z")
+    )
 
 
 def fetch_recent_orders(
     limit: int = 10,
 ) -> list[dict[str, Any]]:
     data = graphql(
-        RECENT_ORDERS_QUERY,
-        variables={"first": limit},
+        ORDERS_QUERY,
+        variables={
+            "first": limit,
+            "after": None,
+            "search": None,
+        },
     )
 
     return data["orders"]["nodes"]
+
+
+def fetch_orders_by_processed_range(
+    start: datetime,
+    end: datetime,
+    page_size: int = 25,
+) -> list[dict[str, Any]]:
+    if start >= end:
+        raise ValueError(
+            "Start datetime must be before end datetime."
+        )
+
+    start_value = _shopify_datetime(start)
+    end_value = _shopify_datetime(end)
+
+    search = (
+        f"processed_at:>='{start_value}' "
+        f"processed_at:<'{end_value}'"
+    )
+
+    orders: list[dict[str, Any]] = []
+    cursor: str | None = None
+
+    while True:
+        data = graphql(
+            ORDERS_QUERY,
+            variables={
+                "first": page_size,
+                "after": cursor,
+                "search": search,
+            },
+        )
+
+        connection = data["orders"]
+
+        orders.extend(connection["nodes"])
+
+        page_info = connection["pageInfo"]
+
+        if not page_info["hasNextPage"]:
+            break
+
+        cursor = page_info["endCursor"]
+
+        if cursor is None:
+            raise RuntimeError(
+                "Shopify reported another page "
+                "without an end cursor."
+            )
+
+    return orders
