@@ -1,0 +1,148 @@
+{
+  "id": "gid://shopify/Order/1002",
+  "name": "TEST-1002",
+  "processedAt": "2026-09-23T12:00:00Z",
+  "updatedAt": "2026-09-24T12:00:00Z",
+  "cancelledAt": null,
+  "test": false,
+  "displayFinancialStatus": "REFUNDED",
+  "currencyCode": "USD",
+  "taxesIncluded": false,
+
+  "subtotalPriceSet": {
+    "shopMoney": {
+      "amount": "89.00",
+      "currencyCode": "USD"
+    }
+  },
+
+  "totalShippingPriceSet": {
+    "shopMoney": {
+      "amount": "9.78",
+      "currencyCode": "USD"
+    }
+  },
+
+  "totalTaxSet": {
+    "shopMoney": {
+      "amount": "8.68",
+      "currencyCode": "USD"
+    }
+  },
+
+  "originalTotalAdditionalFeesSet": null,
+
+  "totalPriceSet": {
+    "shopMoney": {
+      "amount": "107.46",
+      "currencyCode": "USD"
+    }
+  },
+
+  "customer": {
+    "id": "gid://shopify/Customer/5002"
+  },
+
+  "transactions": [
+    {
+      "id": "gid://shopify/OrderTransaction/7002",
+      "kind": "SALE",
+      "status": "SUCCESS",
+      "test": false
+    },
+    {
+      "id": "gid://shopify/OrderTransaction/7003",
+      "kind": "REFUND",
+      "status": "SUCCESS",
+      "test": false
+    }
+  ],
+
+  "lineItems": {
+    "nodes": [
+      {
+        "id": "gid://shopify/LineItem/8002",
+        "title": "Refunded Product",
+        "quantity": 1,
+
+        "product": {
+          "id": "gid://shopify/Product/9003"
+        },
+
+        "variant": {
+          "id": "gid://shopify/ProductVariant/9004"
+        },
+
+        "originalTotalSet": {
+          "shopMoney": {
+            "amount": "89.00",
+            "currencyCode": "USD"
+          }
+        },
+
+        "discountAllocations": []
+      }
+    ]
+  },
+
+  "refunds": [
+    {
+      "id": "gid://shopify/Refund/6001",
+      "createdAt": "2026-09-24T13:34:02Z",
+
+      "totalRefundedSet": {
+        "shopMoney": {
+          "amount": "107.46",
+          "currencyCode": "USD"
+        }
+      },
+
+      "refundLineItems": {
+        "nodes": [
+          {
+            "quantity": 1,
+
+            "subtotalSet": {
+              "shopMoney": {
+                "amount": "89.00",
+                "currencyCode": "USD"
+              }
+            },
+
+            "totalTaxSet": {
+              "shopMoney": {
+                "amount": "8.68",
+                "currencyCode": "USD"
+              }
+            },
+
+            "lineItem": {
+              "id": "gid://shopify/LineItem/8002",
+              "title": "Refunded Product"
+            }
+          }
+        ]
+      },
+
+      "refundShippingLines": {
+        "nodes": [
+          {
+            "subtotalAmountSet": {
+              "shopMoney": {
+                "amount": "9.78",
+                "currencyCode": "USD"
+              }
+            },
+
+            "taxAmountSet": {
+              "shopMoney": {
+                "amount": "0.00",
+                "currencyCode": "USD"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

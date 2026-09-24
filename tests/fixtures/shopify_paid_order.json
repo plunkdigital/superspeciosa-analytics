@@ -1,0 +1,92 @@
+{
+  "id": "gid://shopify/Order/1001",
+  "name": "TEST-1001",
+  "processedAt": "2026-09-24T15:59:41Z",
+  "updatedAt": "2026-09-24T16:00:00Z",
+  "cancelledAt": null,
+  "test": false,
+  "displayFinancialStatus": "PAID",
+  "currencyCode": "USD",
+  "taxesIncluded": false,
+
+  "subtotalPriceSet": {
+    "shopMoney": {
+      "amount": "90.00",
+      "currencyCode": "USD"
+    }
+  },
+
+  "totalShippingPriceSet": {
+    "shopMoney": {
+      "amount": "5.00",
+      "currencyCode": "USD"
+    }
+  },
+
+  "totalTaxSet": {
+    "shopMoney": {
+      "amount": "7.00",
+      "currencyCode": "USD"
+    }
+  },
+
+  "originalTotalAdditionalFeesSet": null,
+
+  "totalPriceSet": {
+    "shopMoney": {
+      "amount": "102.00",
+      "currencyCode": "USD"
+    }
+  },
+
+  "customer": {
+    "id": "gid://shopify/Customer/5001"
+  },
+
+  "transactions": [
+    {
+      "id": "gid://shopify/OrderTransaction/7001",
+      "kind": "SALE",
+      "status": "SUCCESS",
+      "test": false
+    }
+  ],
+
+  "lineItems": {
+    "nodes": [
+      {
+        "id": "gid://shopify/LineItem/8001",
+        "title": "Example Product",
+        "quantity": 2,
+
+        "product": {
+          "id": "gid://shopify/Product/9001"
+        },
+
+        "variant": {
+          "id": "gid://shopify/ProductVariant/9002"
+        },
+
+        "originalTotalSet": {
+          "shopMoney": {
+            "amount": "100.00",
+            "currencyCode": "USD"
+          }
+        },
+
+        "discountAllocations": [
+          {
+            "allocatedAmountSet": {
+              "shopMoney": {
+                "amount": "10.00",
+                "currencyCode": "USD"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+
+  "refunds": []
+}

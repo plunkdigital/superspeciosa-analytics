@@ -91,28 +91,36 @@ query {
         }
       }
 
-      lineItems(first: 20) {
+      lineItems(first: 50) {
         nodes {
-          id
-          title
-          sku
-          quantity
+            id
+            title
+            quantity
 
-          originalTotalSet {
-            shopMoney {
-              amount
-              currencyCode
+            product {
+            id
             }
-          }
 
-          totalDiscountSet {
-            shopMoney {
-              amount
-              currencyCode
+            variant {
+            id
             }
-          }
+
+            originalTotalSet {
+            shopMoney {
+                amount
+                currencyCode
+            }
+            }
+
+            discountAllocations {
+            allocatedAmountSet {
+                shopMoney {
+                amount
+                currencyCode
+                }
+            }
+            }
         }
-      }
     }
   }
 }
