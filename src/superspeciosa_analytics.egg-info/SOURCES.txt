@@ -1,0 +1,11 @@
+README.md
+pyproject.toml
+src/superspeciosa_analytics/__init__.py
+src/superspeciosa_analytics/models.py
+src/superspeciosa_analytics/order_rules.py
+src/superspeciosa_analytics.egg-info/PKG-INFO
+src/superspeciosa_analytics.egg-info/SOURCES.txt
+src/superspeciosa_analytics.egg-info/dependency_links.txt
+src/superspeciosa_analytics.egg-info/requires.txt
+src/superspeciosa_analytics.egg-info/top_level.txt
+tests/test_order_rules.py
