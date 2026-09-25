@@ -176,3 +176,29 @@ def test_rejects_truncated_line_items():
         match="per-order query limit",
     ):
         map_shopify_order(payload)
+
+def test_normalizes_decimal_woo_ids():
+    payload = load_fixture(
+        "shopify_paid_order.json"
+    )
+
+    payload["sourceName"] = "Matrixify App"
+
+    payload["wooOrderId"] = {
+        "value": "19907.0",
+    }
+
+    payload["wooCustomerId"] = {
+        "value": "17.0",
+    }
+
+    payload["customer"]["wooCustomerId"] = {
+        "value": "17.0",
+    }
+
+    order = map_shopify_order(payload)
+
+    assert order.source_system == "woocommerce"
+    assert order.source_order_id == "19907"
+    assert order.woo_customer_id == "17"
+    assert order.shopify_customer_woo_id == "17"

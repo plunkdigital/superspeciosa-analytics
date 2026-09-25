@@ -42,3 +42,28 @@ Audited Matrixify WooCommerce orders from 2021 through September 2024 preserved 
 ### Rationale
 
 The migration contained overlapping Matrixify and native Shopify activity, so a date-based migration boundary would misclassify orders. Preserving explicit source metadata and unresolved cases provides a more reliable foundation for historical reporting and customer acquisition analysis.
+
+## Legacy WooCommerce Payment Evidence
+
+### Decision
+
+Historical WooCommerce orders imported through Matrixify use the same successful-payment rule as native Shopify orders:
+
+A successful Shopify `SALE` or `CAPTURE` transaction is required for an order to qualify as successfully paid.
+
+Historical audits found that paid and refunded WooCommerce orders were imported with successful Shopify sale transactions.
+
+Some early WooCommerce orders were imported with:
+
+* `displayFinancialStatus = PENDING`;
+* no successful Shopify payment transaction;
+* no WooCommerce transaction ID; and
+* no separate capture evidence.
+
+These orders remain in the historical dataset but do not qualify as sales.
+
+Positive product value alone is not evidence of successful payment.
+
+### Rationale
+
+The reporting definition requires a successfully paid order. Treating historical pending orders as sales without payment evidence would introduce unsupported revenue and customer-acquisition history.

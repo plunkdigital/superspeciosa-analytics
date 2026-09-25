@@ -104,6 +104,22 @@ def _metafield_value(
 
     return field["value"]
 
+def _normalize_legacy_id(
+    value: str | None,
+) -> str | None:
+    if value is None:
+        return None
+
+    value = value.strip()
+
+    if value.endswith(".0"):
+        integer_part = value[:-2]
+
+        if integer_part.isdigit():
+            return integer_part
+
+    return value
+
 def _money(value: dict[str, Any] | None) -> Decimal:
     if value is None:
         return ZERO
@@ -259,19 +275,25 @@ def map_shopify_order(
 
     source_name = order.get("sourceName")
 
-    woo_order_id = _metafield_value(
-        order.get("wooOrderId")
+    woo_order_id = _normalize_legacy_id(
+        _metafield_value(
+            order.get("wooOrderId")
+        )
     )
 
-    woo_customer_id = _metafield_value(
-        order.get("wooCustomerId")
+    woo_customer_id = _normalize_legacy_id(
+        _metafield_value(
+            order.get("wooCustomerId")
+        )
     )
 
     customer = order.get("customer")
 
     shopify_customer_woo_id = (
-        _metafield_value(
-            customer.get("wooCustomerId")
+        _normalize_legacy_id(
+            _metafield_value(
+                customer.get("wooCustomerId")
+            )
         )
         if customer
         else None

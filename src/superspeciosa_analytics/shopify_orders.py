@@ -206,6 +206,51 @@ query Orders(
 }
 """
 
+ORDER_LINE_ITEMS_QUERY = """
+query OrderLineItems($id: ID!) {
+  order(id: $id) {
+    id
+    name
+
+    lineItems(first: 250) {
+      nodes {
+        id
+        title
+        quantity
+
+        product {
+          id
+        }
+
+        variant {
+          id
+        }
+
+        originalTotalSet {
+          shopMoney {
+            amount
+            currencyCode
+          }
+        }
+
+        discountAllocations {
+          allocatedAmountSet {
+            shopMoney {
+              amount
+              currencyCode
+            }
+          }
+        }
+      }
+
+      pageInfo {
+        hasNextPage
+      }
+    }
+  }
+}
+"""
+
 
 def _shopify_datetime(value: datetime) -> str:
     if value.tzinfo is None:
@@ -221,6 +266,41 @@ def _shopify_datetime(value: datetime) -> str:
         .replace("+00:00", "Z")
     )
 
+def _hydrate_large_order_line_items(
+    orders: list[dict[str, Any]],
+) -> None:
+    """
+    Re-fetch complete line items only for orders that
+    exceed the normal 50-line query limit.
+
+    Shopify permits up to 250 items in one connection
+    request. The mapper's existing pagination guard
+    will still reject anything above that.
+    """
+    for order in orders:
+        line_items = order["lineItems"]
+
+        if not line_items["pageInfo"]["hasNextPage"]:
+            continue
+
+        data = graphql(
+            ORDER_LINE_ITEMS_QUERY,
+            variables={
+                "id": order["id"],
+            },
+        )
+
+        detailed_order = data["order"]
+
+        if detailed_order is None:
+            raise RuntimeError(
+                f"Shopify order {order['id']} "
+                "disappeared while fetching line items."
+            )
+
+        order["lineItems"] = (
+            detailed_order["lineItems"]
+        )
 
 def fetch_recent_orders(
     limit: int = 10,
@@ -234,7 +314,13 @@ def fetch_recent_orders(
         },
     )
 
-    return data["orders"]["nodes"]
+    orders = data["orders"]["nodes"]
+
+    _hydrate_large_order_line_items(
+        orders
+    )
+
+    return orders
 
 
 def fetch_orders_by_processed_range(
@@ -285,4 +371,29 @@ def fetch_orders_by_processed_range(
                 "without an end cursor."
             )
 
-    return orders
+    # Enforce exact half-open interval ourselves.
+    #
+    # Shopify search can return an order exactly on the
+    # requested upper boundary. Reporting/import ranges use:
+    #
+    #     start <= processedAt < end
+    #
+    # so filter the API result before mapping or reconciliation.
+    filtered_orders = []
+
+    for order in orders:
+        processed_at = datetime.fromisoformat(
+            order["processedAt"].replace(
+                "Z",
+                "+00:00",
+            )
+        )
+
+        if start <= processed_at < end:
+            filtered_orders.append(order)
+
+    _hydrate_large_order_line_items(
+        filtered_orders
+    )
+
+    return filtered_orders

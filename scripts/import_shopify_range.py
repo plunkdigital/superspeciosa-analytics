@@ -1,4 +1,5 @@
 import argparse
+import time as time_module
 from datetime import UTC, datetime, time
 from decimal import Decimal
 
@@ -97,7 +98,7 @@ source_tax = sum(
     Decimal("0"),
 )
 
-BATCH_SIZE = 500
+BATCH_SIZE = 200
 
 with SessionLocal() as session:
     created = 0
@@ -132,6 +133,8 @@ with SessionLocal() as session:
 
         # Keep memory bounded during large backfills.
         session.expunge_all()
+
+        time_module.sleep(0.25)
 
     db_orders = session.scalars(
         select(Order)

@@ -101,11 +101,18 @@ def upsert_orders(
                     mapped.shopify_customer_id
                 ] = customer
             else:
-                customer.ingested_at = now
-
-                customer.woo_customer_id = (
+                incoming_woo_customer_id = (
                     mapped.shopify_customer_woo_id
                 )
+
+                if (
+                    incoming_woo_customer_id is not None
+                    and customer.woo_customer_id
+                    != incoming_woo_customer_id
+                ):
+                    customer.woo_customer_id = (
+                        incoming_woo_customer_id
+                    )
 
         order = existing_orders.get(
             mapped.shopify_order_id

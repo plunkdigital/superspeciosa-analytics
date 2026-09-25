@@ -68,3 +68,35 @@ Therefore:
 
 * Shopify Customer ID alone must not yet be treated as the final cross-platform customer identity.
 * Order-level WooCo
+
+## Historical Shopify Backfill
+
+Complete through August 2026.
+
+Coverage begins in July 2016.
+
+The historical dataset includes:
+
+- WooCommerce-origin orders imported through Matrixify
+- native Shopify orders
+- draft-order sources
+- subscription-order sources
+- other Shopify-era application sources
+
+Each closed monthly range was imported idempotently and reconciled against Shopify for:
+
+- order count
+- product revenue
+- shipping
+- tax
+
+Historical edge cases handled during backfill:
+
+- exact month-end timestamp boundaries
+- WooCommerce IDs imported with `.0` suffixes
+- orders with more than 50 line items
+- overlapping WooCommerce/Shopify migration activity
+- Matrixify orders without identifiable WooCommerce order IDs
+- legacy pending orders without payment evidence
+
+The next major task is customer identity resolution and first-ever qualifying-order classification.
