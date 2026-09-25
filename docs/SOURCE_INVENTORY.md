@@ -68,14 +68,9 @@ Examples may include:
 
 ## Initial Reporting Sources
 
-Phase 1 reporting will use:
-
-1. Shopify Plus
-2. Meta Ads
-3. Manual marketing spend
-
-Phase 2 will add:
-
-1. Appstle
-2. Everflow
-3. Selected GA4 reporting
+Shopify Plus        - Orders/refunds/customer history - In progress
+Meta Ads            - Paid advertising spend           - Next connector
+Manual spend        - CSV/spreadsheet                   - Spec defined
+Appstle             - Subscriptions                     - Phase 2
+Everflow            - Affiliate reporting               - Phase 2
+GA4                 - Site analytics                    - Phase 2
