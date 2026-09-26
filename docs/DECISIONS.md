@@ -67,3 +67,66 @@ Positive product value alone is not evidence of successful payment.
 ### Rationale
 
 The reporting definition requires a successfully paid order. Treating historical pending orders as sales without payment evidence would introduce unsupported revenue and customer-acquisition history.
+
+## Large Historical Orders
+
+Orders with unusually high line counts, quantities, or revenue are preserved as normal source records.
+
+They are not automatically classified as wholesale.
+
+A later analysis will identify large-order candidates across the full historical dataset and determine whether a defensible wholesale classification can be established.
+
+## Customer Identity and New vs Returning Classification
+
+### Canonical Identity Resolution
+
+Qualifying orders are resolved to customer identities using the following priority:
+
+1. For WooCommerce-origin orders with a non-zero order-level WooCommerce customer ID:
+   - `woo:<order woo customer id>`
+
+2. Otherwise, when the attached Shopify customer has a migrated WooCommerce customer ID:
+   - `woo:<customer woo id>`
+
+3. Otherwise, when a Shopify customer exists:
+   - `shopify:<shopify customer id>`
+
+4. Otherwise:
+   - unresolved
+
+The original WooCommerce customer ID stored on an order takes precedence over the customer attached by Matrixify because historical migration audits found cases where those values disagree.
+
+### New Customer Order
+
+The first qualifying order belonging to a resolved customer identity is classified as a new customer order.
+
+### Returning Customer Order
+
+Every later qualifying order belonging to that identity is classified as a returning customer order.
+
+Classification uses the complete available WooCommerce and Shopify purchase history.
+
+### Unresolved Orders
+
+Qualifying orders without a defensible customer identity remain classified as unresolved.
+
+They:
+
+- remain included in total order and revenue reporting;
+- are not counted as new customers;
+- are not counted as returning customers; and
+- are disclosed separately where customer-mix reporting is presented.
+
+Manual review found that most unresolved Shopify-era orders relate to customers whose accounts were deleted. Historical unresolved WooCommerce records will not be manually reconstructed unless a future business requirement justifies the effort.
+
+### Validation
+
+Cross-platform customer histories were manually spot-checked.
+
+The reviewed histories consistently showed:
+
+- the first qualifying WooCommerce order classified as new;
+- later WooCommerce orders classified as returning; and
+- later Shopify orders continuing as returning after the migration.
+
+The identity and classification rules are therefore approved for reporting.
