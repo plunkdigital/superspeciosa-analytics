@@ -27,12 +27,12 @@
 
 ### Meta Ads
 
-- Purpose:
-  - Advertising spend
-  - Campaign / ad set / ad reporting
-  - Platform-attributed results
-- Initial priority: Phase 1
-- First automated advertising connector
+- Purpose: paid advertising spend and platform-reported performance
+- App: created
+- System User: created
+- Ad account access: assigned
+- ads_read token: awaiting administrator approval
+- Connector status: scaffolded, not yet validated
 
 ## Affiliate / Partner Marketing
 
