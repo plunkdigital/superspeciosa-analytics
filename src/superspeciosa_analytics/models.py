@@ -1,13 +1,15 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    Date,
     DateTime,
     ForeignKey,
     Numeric,
     String,
+    Text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -314,4 +316,81 @@ class Refund(Base):
 
     order: Mapped[Order] = relationship(
         back_populates="refunds"
+    )
+
+class ManualSpend(Base):
+    __tablename__ = "manual_spend"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+    )
+
+    record_id: Mapped[str] = mapped_column(
+        String(100),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+
+    vendor: Mapped[str] = mapped_column(
+        String(200),
+        nullable=False,
+    )
+
+    channel: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    campaign: Mapped[str | None] = mapped_column(
+        String(300),
+        nullable=True,
+    )
+
+    cost_type: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    amount: Mapped[Decimal] = mapped_column(
+        MONEY,
+        nullable=False,
+    )
+
+    currency_code: Mapped[str] = mapped_column(
+        String(3),
+        nullable=False,
+    )
+
+    service_start_date: Mapped[date] = mapped_column(
+        Date,
+        nullable=False,
+        index=True,
+    )
+
+    service_end_date: Mapped[date] = mapped_column(
+        Date,
+        nullable=False,
+        index=True,
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(40),
+        nullable=False,
+    )
+
+    reference: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+
+    notes: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    ingested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
     )
