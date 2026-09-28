@@ -1,5 +1,5 @@
 import argparse
-from datetime import UTC, datetime, time
+from datetime import date
 from decimal import Decimal
 
 from superspeciosa_analytics.database import (
@@ -8,19 +8,13 @@ from superspeciosa_analytics.database import (
 from superspeciosa_analytics.reporting import (
     get_commercial_summary,
 )
+from superspeciosa_analytics.reporting_time import (
+    reporting_date_range_to_utc,
+)
 
 
-def parse_date(value: str) -> datetime:
-    parsed = datetime.strptime(
-        value,
-        "%Y-%m-%d",
-    ).date()
-
-    return datetime.combine(
-        parsed,
-        time.min,
-        tzinfo=UTC,
-    )
+def parse_date(value: str) -> date:
+    return date.fromisoformat(value)
 
 
 def money(value: Decimal) -> str:
@@ -43,8 +37,18 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-start = parse_date(args.start)
-end = parse_date(args.end)
+report_start_date = parse_date(
+    args.start
+)
+
+report_end_date = parse_date(
+    args.end
+)
+
+start, end = reporting_date_range_to_utc(
+    start=report_start_date,
+    end=report_end_date,
+)
 
 
 with SessionLocal() as session:
@@ -52,6 +56,12 @@ with SessionLocal() as session:
         session,
         start=start,
         end=end,
+        report_start_date=(
+            report_start_date
+        ),
+        report_end_date=(
+            report_end_date
+        ),
     )
 
 
@@ -146,7 +156,7 @@ print("REFUNDS PROCESSED DURING PERIOD")
 print("-" * 60)
 
 print(
-    "Refund events:",
+    "Cash refund events:",
     report.refund_events,
 )
 
@@ -158,22 +168,60 @@ print(
 )
 
 print(
-    "Attributed product refunds:",
-    money(
-        report.product_refund_amount
-    ),
+    "Refund component allocation:",
+    "not reported pending reconciliation",
+)
+
+print()
+print("MARKETING")
+print("-" * 60)
+
+print(
+    "Meta spend:",
+    money(report.meta_spend),
 )
 
 print(
-    "Attributed shipping refunds:",
-    money(
-        report.shipping_refund_amount
-    ),
+    "Manual spend:",
+    money(report.manual_spend),
 )
 
 print(
-    "Attributed tax refunds:",
+    "Total marketing spend:",
     money(
-        report.tax_refund_amount
+        report.total_marketing_spend
     ),
 )
+
+
+print()
+print("EFFICIENCY")
+print("-" * 60)
+
+if (
+    report.blended_marketing_efficiency
+    is None
+):
+    print(
+        "Blended marketing efficiency: n/a"
+    )
+else:
+    print(
+        "Blended marketing efficiency:",
+        f"{report.blended_marketing_efficiency:.2f}x",
+    )
+
+if (
+    report.blended_new_customer_acquisition_cost
+    is None
+):
+    print(
+        "Blended new-customer CAC: n/a"
+    )
+else:
+    print(
+        "Blended new-customer CAC:",
+        money(
+            report.blended_new_customer_acquisition_cost
+        ),
+    )

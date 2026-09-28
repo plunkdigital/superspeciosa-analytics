@@ -36,9 +36,10 @@ parser.add_argument(
     required=True,
     type=parse_date,
     help=(
-    "End date exclusive. Example: "
-    "2026-09-28 includes data through 2026-09-27."
-),
+        "End date exclusive. Example: "
+        "2026-09-28 includes data through 2026-09-27."
+    ),
+)
 
 args = parser.parse_args()
 
