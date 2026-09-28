@@ -10,6 +10,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -388,6 +389,59 @@ class ManualSpend(Base):
     notes: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
+    )
+
+    ingested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+
+class MetaDailySpend(Base):
+    __tablename__ = "meta_daily_spend"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "ad_account_id",
+            "report_date",
+            name="uq_meta_daily_spend_account_date",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+    )
+
+    ad_account_id: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        index=True,
+    )
+
+    report_date: Mapped[date] = mapped_column(
+        Date,
+        nullable=False,
+        index=True,
+    )
+
+    currency_code: Mapped[str] = mapped_column(
+        String(3),
+        nullable=False,
+    )
+
+    spend: Mapped[Decimal] = mapped_column(
+        MONEY,
+        nullable=False,
+    )
+
+    impressions: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+    )
+
+    clicks: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
     )
 
     ingested_at: Mapped[datetime] = mapped_column(
