@@ -1,5 +1,5 @@
 import argparse
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 from superspeciosa_analytics.database import (
@@ -9,6 +9,9 @@ from superspeciosa_analytics.reporting_compare import (
     CountComparison,
     MetricComparison,
     get_commercial_comparison,
+)
+from superspeciosa_analytics.data_quality import (
+    get_meta_coverage,
 )
 
 
@@ -79,6 +82,18 @@ with SessionLocal() as session:
         session,
         start=args.start,
         end=args.end,
+    )
+
+    current_meta_coverage = get_meta_coverage(
+        session,
+        start=report.current_start,
+        end=report.current_end - timedelta(days=1),
+    )
+
+    previous_meta_coverage = get_meta_coverage(
+        session,
+        start=report.previous_start,
+        end=report.previous_end - timedelta(days=1),
     )
 
 
@@ -189,3 +204,33 @@ if (
         report.blended_new_customer_acquisition_cost,
         formatter=money,
     )
+
+print()
+print("DATA COVERAGE")
+print("-" * 76)
+
+print(
+    "Current Meta:",
+    (
+        "complete"
+        if current_meta_coverage.complete_daily_coverage
+        else (
+            f"incomplete "
+            f"({current_meta_coverage.rows_present}/"
+            f"{current_meta_coverage.expected_days} days)"
+        )
+    ),
+)
+
+print(
+    "Previous Meta:",
+    (
+        "complete"
+        if previous_meta_coverage.complete_daily_coverage
+        else (
+            f"incomplete "
+            f"({previous_meta_coverage.rows_present}/"
+            f"{previous_meta_coverage.expected_days} days)"
+        )
+    ),
+)
