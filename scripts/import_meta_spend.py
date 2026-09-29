@@ -8,6 +8,7 @@ from superspeciosa_analytics.database import (
     SessionLocal,
 )
 from superspeciosa_analytics.meta_ingest import (
+    mark_meta_daily_coverage,
     upsert_meta_daily_spend,
 )
 from superspeciosa_analytics.meta_insights import (
@@ -15,6 +16,9 @@ from superspeciosa_analytics.meta_insights import (
 )
 from superspeciosa_analytics.models import (
     MetaDailySpend,
+)
+from superspeciosa_analytics.meta import (
+    get_ad_account_id,
 )
 
 
@@ -53,15 +57,11 @@ print(
     f"Fetched {len(records)} Meta daily rows."
 )
 
-
-if not records:
-    print(
-        "No Meta spend rows returned."
-    )
-    raise SystemExit(0)
-
-
-account_id = records[0].ad_account_id
+account_id = (
+    records[0].ad_account_id
+    if records
+    else get_ad_account_id()
+)
 
 source_dates = {
     record.report_date
@@ -205,4 +205,19 @@ if failures:
 print()
 print(
     "Meta daily spend reconciliation passed."
+)
+
+with SessionLocal() as session:
+    mark_meta_daily_coverage(
+        session,
+        ad_account_id=account_id,
+        start=args.start,
+        end=args.end,
+    )
+
+    session.commit()
+
+
+print(
+    "Meta source coverage recorded."
 )

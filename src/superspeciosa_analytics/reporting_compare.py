@@ -78,9 +78,7 @@ def _metric_comparison(
     return MetricComparison(
         current=current,
         previous=previous,
-        absolute_change=(
-            current - previous
-        ),
+        absolute_change=current - previous,
         percentage_change=_percentage_change(
             current,
             previous,
@@ -92,20 +90,14 @@ def _count_comparison(
     current: int,
     previous: int,
 ) -> CountComparison:
-    percentage_change = (
-        _percentage_change(
-            Decimal(current),
-            Decimal(previous),
-        )
-    )
-
     return CountComparison(
         current=current,
         previous=previous,
-        absolute_change=(
-            current - previous
+        absolute_change=current - previous,
+        percentage_change=_percentage_change(
+            Decimal(current),
+            Decimal(previous),
         ),
-        percentage_change=percentage_change,
     )
 
 
@@ -125,36 +117,28 @@ def _optional_metric_comparison(
     )
 
 
-def get_commercial_comparison(
+def get_commercial_comparison_for_periods(
     session: Session,
     *,
-    start: date,
-    end: date,
+    current_start: date,
+    current_end: date,
+    previous_start: date,
+    previous_end: date,
 ) -> CommercialComparison:
-    """
-    Compare [start, end) with the immediately
-    preceding period of equal length.
-    """
-    if start >= end:
+    if current_start >= current_end:
         raise ValueError(
-            "Start date must be before end date."
+            "Current start must be before current end."
         )
 
-    period_days = (
-        end - start
-    ).days
-
-    previous_end = start
-
-    previous_start = (
-        previous_end
-        - timedelta(days=period_days)
-    )
+    if previous_start >= previous_end:
+        raise ValueError(
+            "Previous start must be before previous end."
+        )
 
     current_start_utc, current_end_utc = (
         reporting_date_range_to_utc(
-            start=start,
-            end=end,
+            start=current_start,
+            end=current_end,
         )
     )
 
@@ -169,8 +153,8 @@ def get_commercial_comparison(
         session,
         start=current_start_utc,
         end=current_end_utc,
-        report_start_date=start,
-        report_end_date=end,
+        report_start_date=current_start,
+        report_end_date=current_end,
     )
 
     previous = get_commercial_summary(
@@ -185,8 +169,8 @@ def get_commercial_comparison(
         current=current,
         previous=previous,
 
-        current_start=start,
-        current_end=end,
+        current_start=current_start,
+        current_end=current_end,
         previous_start=previous_start,
         previous_end=previous_end,
 
@@ -253,4 +237,39 @@ def get_commercial_comparison(
                 previous.blended_new_customer_acquisition_cost,
             )
         ),
+    )
+
+
+def get_commercial_comparison(
+    session: Session,
+    *,
+    start: date,
+    end: date,
+) -> CommercialComparison:
+    """
+    Compare [start, end) with the immediately
+    preceding period of equal length.
+    """
+    if start >= end:
+        raise ValueError(
+            "Start date must be before end date."
+        )
+
+    period_days = (
+        end - start
+    ).days
+
+    previous_end = start
+
+    previous_start = (
+        previous_end
+        - timedelta(days=period_days)
+    )
+
+    return get_commercial_comparison_for_periods(
+        session,
+        current_start=start,
+        current_end=end,
+        previous_start=previous_start,
+        previous_end=previous_end,
     )

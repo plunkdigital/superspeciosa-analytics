@@ -448,3 +448,36 @@ class MetaDailySpend(Base):
         DateTime(timezone=True),
         nullable=False,
     )
+
+class MetaDailyCoverage(Base):
+    __tablename__ = "meta_daily_coverage"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "ad_account_id",
+            "report_date",
+            name="uq_meta_daily_coverage_account_date",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+    )
+
+    ad_account_id: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        index=True,
+    )
+
+    report_date: Mapped[date] = mapped_column(
+        Date,
+        nullable=False,
+        index=True,
+    )
+
+    checked_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )

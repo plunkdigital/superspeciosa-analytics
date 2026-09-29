@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -7,6 +7,7 @@ from superspeciosa_analytics.meta_insights import (
     MetaDailySpendRecord,
 )
 from superspeciosa_analytics.models import (
+    MetaDailyCoverage,
     MetaDailySpend,
 )
 
@@ -90,3 +91,58 @@ def upsert_meta_daily_spend(
         row.ingested_at = now
 
     return created
+
+def mark_meta_daily_coverage(
+    session: Session,
+    *,
+    ad_account_id: str,
+    start: date,
+    end: date,
+) -> None:
+    """
+    Mark every date in [start, end) as successfully
+    checked against the Meta API.
+    """
+    if start >= end:
+        raise ValueError(
+            "Start date must be before end date."
+        )
+
+    dates = []
+
+    current = start
+
+    while current < end:
+        dates.append(current)
+        current += timedelta(days=1)
+
+    existing_dates = set(
+        session.scalars(
+            select(
+                MetaDailyCoverage.report_date
+            )
+            .where(
+                MetaDailyCoverage.ad_account_id
+                == ad_account_id
+            )
+            .where(
+                MetaDailyCoverage.report_date.in_(
+                    dates
+                )
+            )
+        ).all()
+    )
+
+    now = datetime.now(UTC)
+
+    for report_date in dates:
+        if report_date in existing_dates:
+            continue
+
+        session.add(
+            MetaDailyCoverage(
+                ad_account_id=ad_account_id,
+                report_date=report_date,
+                checked_at=now,
+            )
+        )

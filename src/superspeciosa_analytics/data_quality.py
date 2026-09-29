@@ -4,7 +4,9 @@ from datetime import date
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from superspeciosa_analytics.models import MetaDailySpend
+from superspeciosa_analytics.models import (
+    MetaDailyCoverage,
+)
 
 
 @dataclass(frozen=True)
@@ -47,20 +49,20 @@ def get_meta_coverage(
     row = session.execute(
         select(
             func.count(
-                MetaDailySpend.id
+                MetaDailyCoverage.id
             ),
             func.min(
-                MetaDailySpend.report_date
+                MetaDailyCoverage.report_date
             ),
             func.max(
-                MetaDailySpend.report_date
+                MetaDailyCoverage.report_date
             ),
         )
         .where(
-            MetaDailySpend.report_date >= start
+            MetaDailyCoverage.report_date >= start
         )
         .where(
-            MetaDailySpend.report_date <= end
+            MetaDailyCoverage.report_date <= end
         )
     ).one()
 
