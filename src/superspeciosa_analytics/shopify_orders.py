@@ -397,3 +397,78 @@ def fetch_orders_by_processed_range(
     )
 
     return filtered_orders
+
+def fetch_orders_by_updated_range(
+    start: datetime,
+    end: datetime,
+    page_size: int = 25,
+) -> list[dict[str, Any]]:
+    if start >= end:
+        raise ValueError(
+            "Start datetime must be before end datetime."
+        )
+
+    start_value = _shopify_datetime(start)
+    end_value = _shopify_datetime(end)
+
+    search = (
+        f"updated_at:>='{start_value}' "
+        f"updated_at:<'{end_value}'"
+    )
+
+    orders: list[dict[str, Any]] = []
+    cursor: str | None = None
+
+    while True:
+        data = graphql(
+            ORDERS_QUERY,
+            variables={
+                "first": page_size,
+                "after": cursor,
+                "search": search,
+            },
+        )
+
+        connection = data["orders"]
+
+        orders.extend(connection["nodes"])
+
+        page_info = connection["pageInfo"]
+
+        if not page_info["hasNextPage"]:
+            break
+
+        cursor = page_info["endCursor"]
+
+        if cursor is None:
+            raise RuntimeError(
+                "Shopify reported another page "
+                "without an end cursor."
+            )
+
+    # Enforce exact half-open interval ourselves.
+    #
+    # Shopify search can return an order exactly on the
+    # requested upper boundary. Daily refresh ranges use:
+    #
+    #     start <= updatedAt < end
+    #
+    # so filter the API result before mapping or reconciliation.
+    filtered_orders = []
+
+    for order in orders:
+        updated_at = datetime.fromisoformat(
+            order["updatedAt"].replace(
+                "Z",
+                "+00:00",
+            )
+        )
+
+        if start <= updated_at < end:
+            filtered_orders.append(order)
+
+    _hydrate_large_order_line_items(
+        filtered_orders
+    )
+
+    return filtered_orders

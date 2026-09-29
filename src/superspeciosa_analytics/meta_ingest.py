@@ -102,6 +102,8 @@ def mark_meta_daily_coverage(
     """
     Mark every date in [start, end) as successfully
     checked against the Meta API.
+
+    Existing coverage rows have checked_at refreshed.
     """
     if start >= end:
         raise ValueError(
@@ -116,10 +118,11 @@ def mark_meta_daily_coverage(
         dates.append(current)
         current += timedelta(days=1)
 
-    existing_dates = set(
-        session.scalars(
+    existing_rows = {
+        row.report_date: row
+        for row in session.scalars(
             select(
-                MetaDailyCoverage.report_date
+                MetaDailyCoverage
             )
             .where(
                 MetaDailyCoverage.ad_account_id
@@ -131,12 +134,17 @@ def mark_meta_daily_coverage(
                 )
             )
         ).all()
-    )
+    }
 
     now = datetime.now(UTC)
 
     for report_date in dates:
-        if report_date in existing_dates:
+        existing = existing_rows.get(
+            report_date
+        )
+
+        if existing is not None:
+            existing.checked_at = now
             continue
 
         session.add(
