@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from superspeciosa_analytics.data_quality import (
+    get_everflow_coverage,
     get_meta_coverage,
 )
 from superspeciosa_analytics.database import (
@@ -172,9 +173,33 @@ with SessionLocal() as session:
         ),
     )
 
+    current_everflow_coverage = (
+        get_everflow_coverage(
+            session,
+            start=report.current_start,
+            end=(
+                report.current_end
+                - timedelta(days=1)
+            ),
+        )
+    )
+
+    previous_everflow_coverage = (
+        get_everflow_coverage(
+            session,
+            start=report.previous_start,
+            end=(
+                report.previous_end
+                - timedelta(days=1)
+            ),
+        )
+    )
+
     marketing_comparison_complete = (
         current_meta_coverage.complete_daily_coverage
         and previous_meta_coverage.complete_daily_coverage
+        and current_everflow_coverage.complete_daily_coverage
+        and previous_everflow_coverage.complete_daily_coverage
     )
 
 
@@ -258,6 +283,12 @@ if marketing_comparison_complete:
     )
 
     metric_line(
+        "Everflow payout",
+        report.everflow_payout,
+        formatter=money,
+    )
+
+    metric_line(
         "Total marketing spend",
         report.total_marketing_spend,
         formatter=money,
@@ -289,7 +320,7 @@ else:
     print()
     print(
         "Marketing comparison omitted: "
-        "Meta coverage is incomplete."
+        "marketing source coverage is incomplete."
     )
 
 
@@ -319,6 +350,32 @@ print(
             f"incomplete "
             f"({previous_meta_coverage.rows_present}/"
             f"{previous_meta_coverage.expected_days} days)"
+        )
+    ),
+)
+
+print(
+    "Current Everflow:",
+    (
+        "complete"
+        if current_everflow_coverage.complete_daily_coverage
+        else (
+            f"incomplete "
+            f"({current_everflow_coverage.rows_present}/"
+            f"{current_everflow_coverage.expected_days} days)"
+        )
+    ),
+)
+
+print(
+    "Previous Everflow:",
+    (
+        "complete"
+        if previous_everflow_coverage.complete_daily_coverage
+        else (
+            f"incomplete "
+            f"({previous_everflow_coverage.rows_present}/"
+            f"{previous_everflow_coverage.expected_days} days)"
         )
     ),
 )

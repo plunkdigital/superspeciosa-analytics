@@ -2,6 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import (
+    Integer,
     BigInteger,
     Boolean,
     Date,
@@ -478,6 +479,61 @@ class MetaDailyCoverage(Base):
     )
 
     checked_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+
+class EverflowDailyPerformance(Base):
+    __tablename__ = "everflow_daily_performance"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+    )
+
+    report_date: Mapped[date] = mapped_column(
+        Date,
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    currency_code: Mapped[str] = mapped_column(
+        String(3),
+        nullable=False,
+    )
+
+    payout: Mapped[Decimal] = mapped_column(
+        Numeric(18, 6),
+        nullable=False,
+    )
+
+    revenue: Mapped[Decimal] = mapped_column(
+        Numeric(18, 6),
+        nullable=False,
+    )
+
+    gross_sales: Mapped[Decimal] = mapped_column(
+        Numeric(18, 6),
+        nullable=False,
+    )
+
+    conversions: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
+
+    clicks: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
+
+    source_rows: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
+
+    ingested_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
     )

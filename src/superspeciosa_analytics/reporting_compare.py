@@ -51,6 +51,7 @@ class CommercialComparison:
 
     meta_spend: MetricComparison
     manual_spend: MetricComparison
+    everflow_payout: MetricComparison
     total_marketing_spend: MetricComparison
 
     blended_marketing_efficiency: MetricComparison | None
@@ -217,6 +218,11 @@ def get_commercial_comparison_for_periods(
         manual_spend=_metric_comparison(
             current.manual_spend,
             previous.manual_spend,
+        ),
+
+        everflow_payout=_metric_comparison(
+            current.everflow_payout,
+            previous.everflow_payout,
         ),
 
         total_marketing_spend=_metric_comparison(

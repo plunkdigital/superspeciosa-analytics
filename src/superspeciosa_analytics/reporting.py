@@ -6,6 +6,7 @@ from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from superspeciosa_analytics.models import (
+    EverflowDailyPerformance,
     ManualSpend,
     MetaDailySpend,
     Refund,
@@ -43,6 +44,7 @@ class CommercialSummary:
 
     meta_spend: Decimal
     manual_spend: Decimal
+    everflow_payout: Decimal
     total_marketing_spend: Decimal
 
     blended_marketing_efficiency: Decimal | None
@@ -277,6 +279,22 @@ def get_commercial_summary(
         meta_spend
     )
 
+    everflow_payout = session.scalar(
+        select(
+            func.sum(
+                EverflowDailyPerformance.payout
+            )
+        )
+        .where(
+            EverflowDailyPerformance.report_date
+            >= report_start_date
+        )
+        .where(
+            EverflowDailyPerformance.report_date
+            < report_end_date
+        )
+    ) or ZERO
+
     manual_spend = (
         _manual_spend_for_period(
             session,
@@ -287,6 +305,7 @@ def get_commercial_summary(
 
     total_marketing_spend = (
         meta_spend
+        + everflow_payout
         + manual_spend
     )
 
@@ -363,6 +382,7 @@ def get_commercial_summary(
         ),
         meta_spend=meta_spend,
         manual_spend=manual_spend,
+        everflow_payout=everflow_payout,
         total_marketing_spend=(
             total_marketing_spend
         ),

@@ -187,6 +187,13 @@ print(
 )
 
 print(
+    "Everflow payout:",
+    money(
+        report.everflow_payout
+    ),
+)
+
+print(
     "Total marketing spend:",
     money(
         report.total_marketing_spend
