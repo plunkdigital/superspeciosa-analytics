@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 
 from sqlalchemy.orm import Session
@@ -14,6 +14,15 @@ from superspeciosa_analytics.reporting_compare import (
 from superspeciosa_analytics.reporting_presets import (
     ComparisonPreset,
     resolve_comparison_preset,
+)
+from superspeciosa_analytics.report_observations import (
+    build_observations,
+)
+from superspeciosa_analytics.reporting_time import (
+    get_reporting_timezone,
+)
+from superspeciosa_analytics.source_freshness import (
+    get_source_freshness,
 )
 
 
@@ -50,6 +59,20 @@ def _change_text(
         return "n/a"
 
     return _percentage(value)
+
+def _freshness_time(
+    value: datetime | None,
+) -> str:
+    if value is None:
+        return "never imported"
+
+    local = value.astimezone(
+        get_reporting_timezone()
+    )
+
+    return local.strftime(
+        "%Y-%m-%d %H:%M %Z"
+    )
 
 
 def _marketing_coverage_complete(
@@ -237,6 +260,25 @@ def build_daily_brief(
         )
     )
 
+    observations = build_observations(
+        yesterday=yesterday,
+        last_7=last_7,
+        month_to_date=month_to_date,
+        yesterday_marketing_complete=(
+            yesterday_marketing_complete
+        ),
+        last_7_marketing_complete=(
+            last_7_marketing_complete
+        ),
+        mtd_marketing_complete=(
+            mtd_marketing_complete
+        ),
+    )
+
+    freshness = get_source_freshness(
+        session
+    )
+
     completed_through = (
         as_of
         - timedelta(days=1)
@@ -310,6 +352,19 @@ def build_daily_brief(
     lines.extend(
         [
             "",
+            "OBSERVATIONS",
+            "-" * 72,
+        ]
+    )
+
+    for observation in observations:
+        lines.append(
+            f"- {observation}"
+        )
+
+    lines.extend(
+        [
+            "",
             "DATA STATUS",
             "-" * 72,
             (
@@ -334,6 +389,33 @@ def build_daily_brief(
                     "complete"
                     if mtd_marketing_complete
                     else "incomplete"
+                )
+            ),
+            "",
+            "SOURCE FRESHNESS",
+            "-" * 72,
+            (
+                "Shopify: "
+                + _freshness_time(
+                    freshness.shopify
+                )
+            ),
+            (
+                "Meta: "
+                + _freshness_time(
+                    freshness.meta
+                )
+            ),
+            (
+                "Everflow: "
+                + _freshness_time(
+                    freshness.everflow
+                )
+            ),
+            (
+                "Manual spend: "
+                + _freshness_time(
+                    freshness.manual_spend
                 )
             ),
         ]
