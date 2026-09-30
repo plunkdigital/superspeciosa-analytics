@@ -25,6 +25,10 @@ from superspeciosa_analytics.source_freshness import (
     get_source_freshness,
 )
 
+class DailyBriefIncompleteDataError(
+    RuntimeError
+):
+    pass
 
 def _money(value: Decimal) -> str:
     return f"${value:,.2f}"
@@ -157,13 +161,13 @@ def _headline_section(
     lines.append("-" * 72)
 
     lines.append(
-        "Revenue: "
+        "Product revenue: "
         f"{_money(comparison.product_revenue.current)} "
         f"({_change_text(comparison.product_revenue.percentage_change)})"
     )
 
     lines.append(
-        "Orders: "
+        "Qualifying orders: "
         f"{_count(comparison.qualifying_orders.current)} "
         f"({_change_text(comparison.qualifying_orders.percentage_change)})"
     )
@@ -220,6 +224,7 @@ def build_daily_brief(
     session: Session,
     *,
     as_of: date,
+    require_complete_marketing: bool = False,
 ) -> str:
     yesterday = _get_comparison(
         session,
@@ -259,6 +264,33 @@ def build_daily_brief(
             month_to_date,
         )
     )
+
+    if require_complete_marketing:
+        incomplete_periods = []
+
+        if not yesterday_marketing_complete:
+            incomplete_periods.append(
+                "yesterday"
+            )
+
+        if not last_7_marketing_complete:
+            incomplete_periods.append(
+                "last 7 days"
+            )
+
+        if not mtd_marketing_complete:
+            incomplete_periods.append(
+                "month to date"
+            )
+
+        if incomplete_periods:
+            raise DailyBriefIncompleteDataError(
+                "Incomplete marketing source "
+                "coverage for: "
+                + ", ".join(
+                    incomplete_periods
+                )
+            )
 
     observations = build_observations(
         yesterday=yesterday,

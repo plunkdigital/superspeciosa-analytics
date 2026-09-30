@@ -34,6 +34,11 @@ shopify_start = (
     - timedelta(days=3)
 )
 
+shopify_end = (
+    today
+    + timedelta(days=1)
+)
+
 marketing_start = (
     today
     - timedelta(days=7)
@@ -49,7 +54,8 @@ print(
 
 print(
     f"Shopify refresh: "
-    f"{shopify_start} through {today} exclusive"
+    f"{shopify_start} through "
+    f"{shopify_end} exclusive"
 )
 
 print(
@@ -65,7 +71,7 @@ run_command(
         "--start",
         shopify_start.isoformat(),
         "--end",
-        today.isoformat(),
+        shopify_end.isoformat(),
     ]
 )
 
@@ -99,6 +105,9 @@ run_command(
         "scripts/daily_brief.py",
         "--as-of",
         today.isoformat(),
+        "--require-complete-marketing",
+        "--output",
+        "data/exports/daily_brief.txt",
     ]
 )
 
