@@ -34,9 +34,9 @@ shopify_start = (
     - timedelta(days=3)
 )
 
-meta_start = (
+marketing_start = (
     today
-    - timedelta(days=3)
+    - timedelta(days=7)
 )
 
 print()
@@ -53,8 +53,8 @@ print(
 )
 
 print(
-    f"Meta refresh: "
-    f"{meta_start} through {today} exclusive"
+    f"Marketing refresh: "
+    f"{marketing_start} through {today} exclusive"
 )
 
 
@@ -75,7 +75,18 @@ run_command(
         sys.executable,
         "scripts/import_meta_spend.py",
         "--start",
-        meta_start.isoformat(),
+        marketing_start.isoformat(),
+        "--end",
+        today.isoformat(),
+    ]
+)
+
+run_command(
+    [
+        sys.executable,
+        "scripts/import_everflow.py",
+        "--start",
+        marketing_start.isoformat(),
         "--end",
         today.isoformat(),
     ]
