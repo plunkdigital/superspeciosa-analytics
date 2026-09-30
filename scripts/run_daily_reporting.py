@@ -93,21 +93,14 @@ run_command(
 )
 
 
-for preset in (
-    "yesterday",
-    "last7",
-    "mtd",
-):
-    run_command(
-        [
-            sys.executable,
-            "scripts/report_comparison.py",
-            "--preset",
-            preset,
-            "--as-of",
-            today.isoformat(),
-        ]
-    )
+run_command(
+    [
+        sys.executable,
+        "scripts/daily_brief.py",
+        "--as-of",
+        today.isoformat(),
+    ]
+)
 
 
 print()
