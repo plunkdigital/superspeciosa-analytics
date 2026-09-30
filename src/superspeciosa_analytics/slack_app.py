@@ -11,14 +11,19 @@ from superspeciosa_analytics.daily_brief import (
 from superspeciosa_analytics.database import (
     SessionLocal,
 )
-from superspeciosa_analytics.reporting_presets import (
-    current_business_date,
-)
 from superspeciosa_analytics.reporting_time import (
     get_reporting_timezone,
 )
 from superspeciosa_analytics.source_freshness import (
     get_source_freshness,
+)
+from superspeciosa_analytics.reporting_compare import (
+    get_commercial_comparison_for_periods,
+)
+from superspeciosa_analytics.reporting_presets import (
+    ComparisonPreset,
+    current_business_date,
+    resolve_comparison_preset,
 )
 
 
@@ -36,12 +41,23 @@ Latest ingestion/check time for each source.
 `/analytics help`
 Show this help.
 
+'/analytics yesterday'
+'/analytics last7'
+'/analytics mtd'
+
 You can also mention the bot:
 
 `@Super Speciosa Analytics daily`
 `@Super Speciosa Analytics freshness`
 """.strip()
 
+def _percentage(
+    value,
+) -> str:
+    if value is None:
+        return "n/a"
+
+    return f"{value:+.1f}%"
 
 def _normalize_request(
     value: str,
@@ -173,10 +189,118 @@ def handle_reporting_request(
     }:
         return build_freshness_message()
 
+    if request in {
+        "yesterday",
+        "yday",
+    }:
+        return build_period_message(
+            ComparisonPreset.YESTERDAY
+        )
+
+    if request in {
+        "last7",
+        "last 7",
+        "week",
+    }:
+        return build_period_message(
+            ComparisonPreset.LAST_7_DAYS
+        )
+
+    if request in {
+        "mtd",
+        "month",
+        "month to date",
+    }:
+        return build_period_message(
+            ComparisonPreset.MONTH_TO_DATE
+        )
+
     return (
         "I don't recognise that command yet.\n\n"
         + HELP_TEXT
     )
+
+def build_period_message(
+    preset: ComparisonPreset,
+) -> str:
+    as_of = current_business_date()
+
+    periods = resolve_comparison_preset(
+        preset,
+        as_of=as_of,
+    )
+
+    with SessionLocal() as session:
+        report = get_commercial_comparison_for_periods(
+            session,
+            current_start=periods.current_start,
+            current_end=periods.current_end,
+            previous_start=periods.previous_start,
+            previous_end=periods.previous_end,
+        )
+
+    lines = [
+        "*Super Speciosa Commercial Comparison*",
+        "",
+        (
+            f"*Current:* "
+            f"{report.current_start} through "
+            f"{report.current_end} exclusive"
+        ),
+        (
+            f"*Previous:* "
+            f"{report.previous_start} through "
+            f"{report.previous_end} exclusive"
+        ),
+        "",
+        (
+            "*Product revenue:* "
+            f"${report.product_revenue.current:,.2f} "
+            f"({_percentage(report.product_revenue.percentage_change)})"
+        ),
+        (
+            "*Qualifying orders:* "
+            f"{report.qualifying_orders.current:,} "
+            f"({_percentage(report.qualifying_orders.percentage_change)})"
+        ),
+        (
+            "*AOV:* "
+            f"${report.average_order_value.current:,.2f} "
+            f"({_percentage(report.average_order_value.percentage_change)})"
+        ),
+        (
+            "*New customers:* "
+            f"{report.new_customers.current:,} "
+            f"({_percentage(report.new_customers.percentage_change)})"
+        ),
+        (
+            "*Marketing spend:* "
+            f"${report.total_marketing_spend.current:,.2f} "
+            f"({_percentage(report.total_marketing_spend.percentage_change)})"
+        ),
+    ]
+
+    if (
+        report.blended_marketing_efficiency
+        is not None
+    ):
+        lines.append(
+            "*Blended efficiency:* "
+            f"{report.blended_marketing_efficiency.current:.2f}x "
+            f"({_percentage(report.blended_marketing_efficiency.percentage_change)})"
+        )
+
+    if (
+        report.blended_new_customer_acquisition_cost
+        is not None
+    ):
+        lines.append(
+            "*New-customer CAC:* "
+            f"${report.blended_new_customer_acquisition_cost.current:,.2f} "
+            f"({_percentage(report.blended_new_customer_acquisition_cost.percentage_change)})"
+        )
+
+    return "\n".join(lines)
 
 
 def create_slack_app() -> App:
