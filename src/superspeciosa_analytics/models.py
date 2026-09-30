@@ -537,3 +537,82 @@ class EverflowDailyPerformance(Base):
         DateTime(timezone=True),
         nullable=False,
     )
+
+class ThoughtMetricDailyChannel(Base):
+    __tablename__ = "thoughtmetric_daily_channel"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "report_date",
+            "channel_key",
+            name="uq_thoughtmetric_daily_channel_date_key",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+    )
+
+    report_date: Mapped[date] = mapped_column(
+        Date,
+        nullable=False,
+        index=True,
+    )
+
+    channel_key: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        index=True,
+    )
+
+    orders: Mapped[Decimal] = mapped_column(
+        Numeric(18, 6),
+        nullable=False,
+    )
+
+    new_customer_orders: Mapped[Decimal] = mapped_column(
+        Numeric(18, 6),
+        nullable=False,
+    )
+
+    new_customer_sales: Mapped[Decimal] = mapped_column(
+        Numeric(18, 6),
+        nullable=False,
+    )
+
+    attributed_total_sales: Mapped[Decimal] = mapped_column(
+        Numeric(18, 6),
+        nullable=False,
+    )
+
+    converted_spend: Mapped[Decimal] = mapped_column(
+        Numeric(18, 6),
+        nullable=False,
+    )
+
+    ingested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+
+
+class ThoughtMetricDailyCoverage(Base):
+    __tablename__ = "thoughtmetric_daily_coverage"
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+    )
+
+    report_date: Mapped[date] = mapped_column(
+        Date,
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    checked_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
