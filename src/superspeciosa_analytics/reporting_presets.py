@@ -60,6 +60,27 @@ def _next_month_start(
         1,
     )
 
+def previous_same_weekdays(
+    value: date,
+    *,
+    count: int = 4,
+) -> tuple[date, ...]:
+    if count <= 0:
+        raise ValueError(
+            "Count must be positive."
+        )
+
+    return tuple(
+        value
+        - timedelta(
+            days=7 * offset
+        )
+        for offset in range(
+            1,
+            count + 1,
+        )
+    )
+
 
 def resolve_comparison_preset(
     preset: ComparisonPreset | str,

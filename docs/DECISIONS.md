@@ -130,3 +130,21 @@ The reviewed histories consistently showed:
 - later Shopify orders continuing as returning after the migration.
 
 The identity and classification rules are therefore approved for reporting.
+
+## ThoughtMetric channel mapping
+
+Daily acquisition reporting uses ThoughtMetric attribution with the
+project's configured attribution model.
+
+- Meta Ads: `facebookad`
+- Everflow payout-relevant affiliate attribution: `815`
+- ThoughtMetric channel `816` ("Google Ads (Everflow)") is not included
+  in daily Everflow CAC because its spend is tracked through the manual
+  spend ledger rather than Everflow partner payout.
+
+Channel 816 attribution may be paired with manual spend in a future
+weekly/monthly reporting layer.
+
+Daily Slack reporting excludes manual spend and blended marketing
+efficiency. Those metrics are only appropriate after the manual spend
+ledger has been refreshed.

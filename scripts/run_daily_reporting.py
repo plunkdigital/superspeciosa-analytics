@@ -4,6 +4,7 @@ from datetime import date, timedelta
 
 from superspeciosa_analytics.reporting_presets import (
     current_business_date,
+    previous_same_weekdays,
 )
 
 
@@ -98,16 +99,58 @@ run_command(
     ]
 )
 
+run_command(
+    [
+        sys.executable,
+        "scripts/import_thoughtmetric.py",
+        "--start",
+        marketing_start.isoformat(),
+        "--end",
+        today.isoformat(),
+    ]
+)
+
+thoughtmetric_report_date = (
+    today
+    - timedelta(days=1)
+)
+
+thoughtmetric_baseline_dates = (
+    previous_same_weekdays(
+        thoughtmetric_report_date,
+        count=4,
+    )
+)
+
+
+for baseline_date in (
+    thoughtmetric_baseline_dates
+):
+    baseline_end = (
+        baseline_date
+        + timedelta(days=1)
+    )
+
+    run_command(
+        [
+            sys.executable,
+            "scripts/import_thoughtmetric.py",
+            "--start",
+            baseline_date.isoformat(),
+            "--end",
+            baseline_end.isoformat(),
+        ]
+    )
+
 
 run_command(
     [
         sys.executable,
-        "scripts/daily_brief.py",
+        "scripts/build_daily_slack_report.py",
         "--as-of",
         today.isoformat(),
-        "--require-complete-marketing",
         "--output",
-        "data/exports/daily_brief.txt",
+        "data/exports/daily_slack_payload.json",
     ]
 )
 
