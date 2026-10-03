@@ -704,8 +704,14 @@ class AppstleSubscriptionOrder(Base):
         primary_key=True,
     )
 
-    appstle_row_id: Mapped[int] = mapped_column(
+    appstle_row_id: Mapped[int | None] = mapped_column(
         BigInteger,
+        nullable=True,
+        index=True,
+    )
+
+    source_key: Mapped[str] = mapped_column(
+        String(200),
         unique=True,
         nullable=False,
         index=True,

@@ -46,15 +46,44 @@ def get(
     path: str,
     *,
     params: dict | None = None,
+    max_attempts: int = 5,
 ):
-    response = httpx.get(
-        f"{get_base_url()}{path}",
-        headers={
-            "X-API-Key": get_api_key(),
-        },
-        params=params,
-        timeout=60.0,
-    )
+    for attempt in range(
+        1,
+        max_attempts + 1,
+    ):
+        response = httpx.get(
+            f"{get_base_url()}{path}",
+            headers={
+                "X-API-Key": get_api_key(),
+            },
+            params=params,
+            timeout=60.0,
+        )
+
+        if response.status_code != 429:
+            break
+
+        if attempt == max_attempts:
+            break
+
+        retry_after = response.headers.get(
+            "Retry-After"
+        )
+
+        if retry_after:
+            sleep_seconds = float(
+                retry_after
+            )
+        else:
+            sleep_seconds = min(
+                2 ** (attempt - 1),
+                30,
+            )
+
+        time.sleep(
+            sleep_seconds
+        )
 
     if not response.is_success:
         raise AppstleAPIError(
